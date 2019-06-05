@@ -1,0 +1,170 @@
+	.ORIG x3000
+	LEA R0, DISCLAIMER	;load Disclaimer
+	PUTS			;Output to screen
+
+	JSR SCORE
+
+TOP	STI R5, TEST1
+
+	JSR SCORE2
+
+TOP2	STI R5, TEST2 ; sends to score2
+
+TOP3	JSR AVG	;sends to avg
+
+	JSR EXIT
+
+
+SCORE	LDI R1, TENS
+	LDI R2, ONES
+	AND R0, R0, x0 
+	LEA R0, PROMPT		;load Prompt
+	PUTS
+	GETC
+	OUT
+	ADD R3, R0, x0
+	ADD R3, R3, #-16
+	ADD R3, R3, #-16
+	ADD R3, R3, #-16	;Convert ASCII to decimal
+	ADD R3, R3, #-10
+	BRp ERROR		;Input validation
+	ADD R3, R3, #10
+	JSR MULT
+	GETC
+	OUT
+	ADD R4, R0, x0
+	ADD R4, R4, #-16
+	ADD R4, R4, #-16
+	ADD R4, R4, #-16
+	ADD R4, R4, #-10
+	BRP ERROR
+	ADD R4, R4, #10
+	STI R3, TENS
+	STI R4, ONES
+	AND R5, R5, x0
+	ADD R5, R3, R4
+	AND R0, R0, x0 
+	ADD R0, R5, x0
+	
+	JSR PUSH	;PUSH FIRST VALUE INTO STORING
+	BR  TOP
+
+
+SCORE2	AND R1, R1, x0 ;clears r1 and r2 (i dont know if we need to)
+	AND R2, R2, x0
+	LDI R1, TENS
+	LDI R2, ONES
+	AND R0, R0, x0 
+	LEA R0, PROMPT2		;load Prompt
+	PUTS
+	GETC
+	OUT
+	AND R3, R3, x0
+	ADD R3, R0, x0
+	ADD R3, R3, #-16
+	ADD R3, R3, #-16
+	ADD R3, R3, #-16	;Convert ASCII to decimal
+	ADD R3, R3, #-10
+	BRp ERROR		;Input validation
+	ADD R3, R3, #10
+	JSR MULT
+	GETC
+	OUT
+	AND R4, R4, x0
+	ADD R4, R0, x0
+	ADD R4, R4, #-16
+	ADD R4, R4, #-16
+	ADD R4, R4, #-16
+	ADD R4, R4, #-10
+	BRP ERROR
+	ADD R4, R4, #10
+	STI R3, TENS
+	STI R4, ONES
+	AND R5, R5, x0
+	ADD R5, R3, R4
+
+	AND R0, R0, x0 ;this checks if the last input is bigger than current(doesnt work)
+	JSR POP		;pops out value
+	JSR PUSH	;pushes same value to store it for future use
+	NOT R0, R0	;makes value in stack negative
+	ADD R0, R0, #1
+	ADD R0, R0, R5	;subtracts last value to current
+	BRn SCORE2	;if last is larger, go back to top
+	AND R0, R0, x0	;else, takes value in stack and scraps it
+	JSR POP
+	AND R0, R0, x0
+	ADD R0, R5, x0 ;takes current value and puts in stack
+	JSR PUSH
+	BR  TOP2
+
+
+ERROR	LEA R0, ERMSG
+	PUTS	
+
+MULT	AND R1, R1, x0
+	AND R6, R6, x0
+	ADD R6, R6, #-10
+MULTS	ADD R4, R4, R3
+	ADD R6, R6, #1
+	BRn MULTS
+	AND R3, R3, x0
+
+	ADD R3, R3, R4
+	RET
+
+AVG	AND R1, R1, x0 ; currently used to see if the values of
+	AND R2, R2, x0	;test1 and 2 went through
+	LDI R1, TEST1	;they do, but only displays only from 0 - 9
+	LDI R2, TEST2	;also, i tried adding the two, but the 
+	AND R0, R0, x0 	;adding doesnt work, like i did
+	LEA R0, SKIP	;2 plus 2 and got 6
+	PUTS
+	AND R0, R0, x0
+	ADD R0, R1, R2
+	ADD R0, R0, #15
+	ADD R0, R0, #15
+	ADD R0, R0, #15
+	ADD R0, R0, #3
+	OUT
+	BR TEST3
+
+PUSH	ADD R6, R6, #-1
+	STR R0, R6, #0
+	RET
+
+POP	LDR R0, R6, #0
+	ADD R6, R6, #1
+	RET
+
+EXIT	HALT
+	
+
+ERMSG	.STRINGZ "Enter valid number"
+
+PROMPT	.STRINGZ "\nEnter score 1: "
+PROMPT2	.STRINGZ "\nEnter score 2: "
+SKIP	.STRINGZ "\n"
+
+
+DISCLAIMER	.STRINGZ "This code can only take scores up to 99, Please enter 5 scores\n"
+
+
+
+TENS	.FILL x3100
+ONES	.FILL x3101
+
+VALUE	.FILL x3102
+
+
+TEST1	.FILL x3103
+TEST2	.FILL x3104
+
+TEST3	.FILL x3105
+
+TEST4	.FILL x3106
+
+TEST5	.FILL x3107
+
+
+
+.END	
